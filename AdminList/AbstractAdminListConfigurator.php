@@ -3,6 +3,21 @@
 namespace Kunstmaan\AdminListBundle\AdminList;
 abstract class AbstractAdminListConfigurator
 {
+    
+    private $exportFields = array();
+    
+    function addExportField($fieldname, $fieldheader, $sort, $template = null)
+    {
+        $this->exportFields[] = new Field($fieldname, $fieldheader, $sort, $template);
+    }
+    
+    function getExportFields(){
+        if(empty($this->exportFields )){
+            return $this->fields;
+        }else{
+            return $this->exportFields;
+        }
+    }
 
     public function buildFilters(AdminListFilter $builder)
     {
@@ -100,5 +115,29 @@ abstract class AbstractAdminListConfigurator
     function getLimit()
     {
         return 10;
+    }
+    
+    function getStringValue($item, $columnName)
+    {
+        $result = $this->getValue($item, $columnName);
+        if (is_bool($result)) {
+            return $result ? "true" : "false";
+        }
+        if ($result instanceof \DateTime) {
+            return $result->format('Y-m-d H:i:s');
+        } else if ($result instanceof \Doctrine\ORM\PersistentCollection) {
+            $results = "";
+            foreach ($result as $entry) {
+                $results[] = $entry->getName();
+            }
+            if (empty($results)) {
+                return "";
+            }
+            return implode(', ', $results);
+        } else if (is_array($result)) {
+            return implode(', ', $result);
+        } else {
+            return $result;
+        }
     }
 }

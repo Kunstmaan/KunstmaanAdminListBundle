@@ -86,10 +86,12 @@ class AdminList {
         return $query->getSingleScalarResult();
     }
 
-    public function getItems($params = array()){
+    public function getItems($params = array(), $export = false){
         $queryBuilder = $this->em->getRepository($this->configurator->getRepositoryName())->createQueryBuilder('b');
-        $queryBuilder->setFirstResult( ($this->page-1) * $this->configurator->getLimit() );
-        $queryBuilder->setMaxResults( $this->configurator->getLimit() );
+        if($export === false){
+            $queryBuilder->setFirstResult(($this->page - 1) * $this->configurator->getLimit());
+            $queryBuilder->setMaxResults($this->configurator->getLimit());
+        }
         $this->configurator->adaptQueryBuilder($queryBuilder, $params);
         $this->adminlistfilter->adaptQueryBuilder($queryBuilder);
         if(!is_null($this->orderBy)){
@@ -133,5 +135,15 @@ class AdminList {
 
     public function getOrderDirection(){
         return $this->orderDirection;
+    }
+    
+    public function getExportColumns()
+    {
+        return $this->configurator->getExportFields();
+    }
+    
+    public function getStringValue($object, $attribute)
+    {
+        return $this->configurator->getStringValue($object, $attribute);
     }
 }
