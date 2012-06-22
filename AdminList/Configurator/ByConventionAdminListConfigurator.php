@@ -48,7 +48,8 @@ abstract class ByConventionAdminListConfigurator extends AbstractAdminListConfig
 	public function getDeleteUrlFor($item) {
 		return array(
 			'action' => sprintf('%s:delete', $this->getControllerPath()),
-			'path' => $this->getPathByConvention($this::SUFFIX_DELETE)
+			'path' => $this->getPathByConvention($this::SUFFIX_DELETE),
+			'params' => array('entity_id' => $item->getId())
 		);
 	}
 
