@@ -22,14 +22,19 @@ abstract class AdminListController extends Controller {
 	 * @Template("KunstmaanAdminListBundle:Default:list.html.twig")
 	 * @return array
 	 */
-	public function indexAction() {
+	public function indexAction()
+	{
 		$em = $this->getDoctrine()->getEntityManager();
 		$request = $this->getRequest();
-		$adminlist = $this->get("adminlist.factory")->createList($this->getAdminListConfiguration(), $em);
+		$adminlistconfig = $this->getAdminListConfiguration();
+		$adminlist = $this->get("adminlist.factory")->createList($adminlistconfig, $em);
 		$adminlist->bindRequest($request);
+
+		$request->getSession()->set('listparams_'.$adminlistconfig->getName(), $request->query->all());
 
 		return array(
 			'adminlist' => $adminlist,
+			'adminlistconfig' => $adminlistconfig,
 			'addparams' => array()
 		);
 	}
@@ -39,15 +44,13 @@ abstract class AdminListController extends Controller {
 	 * @Method({"GET", "POST"})
 	 * @return array
 	 */
-	public function exportAction($_format) {
-
+	public function exportAction($_format)
+	{
 		$em = $this->getDoctrine()->getEntityManager();
 		$request = $this->getRequest();
 		$adminlist = $this->get("adminlist.factory")->createList($this->getAdminListConfiguration(), $em);
 		$adminlist->bindRequest($request);
 		$entities = $adminlist->getItems(array());
-		
-		
 
 		$response = new Response();
 		$filename = sprintf('entries.%s', $_format);
@@ -68,11 +71,12 @@ abstract class AdminListController extends Controller {
 	 * @Template("KunstmaanAdminListBundle:Default:add.html.twig")
 	 * @return array
 	 */
-	public function addAction() {
-
+	public function addAction()
+	{
 		$em = $this->getDoctrine()->getEntityManager();
 		$request = $this->getRequest();
-		$entityName = $this->getAdminListConfiguration()->getRepositoryName();
+		$adminlistconfig = $this->getAdminListConfiguration();
+		$entityName = $adminlistconfig->getRepositoryName();
 		$classMetaData = $em->getClassMetadata($entityName);
 		// Creates a new instance of the mapped class, without invoking the constructor.
 		$helper = $classMetaData->newInstance();
@@ -83,10 +87,18 @@ abstract class AdminListController extends Controller {
 			if ($form->isValid()) {
 				$em->persist($helper);
 				$em->flush();
-				return new RedirectResponse($this->generateUrl($this->getAdminListConfiguration()->getIndexUrlFor()));
+				$lastseenlistparams = $request->getSession()->get('listparams_'.$adminlistconfig->getName());
+				$indexurl = $adminlistconfig->getIndexUrlFor();
+				if (!is_null($lastseenlistparams)) {
+					return new RedirectResponse($this->generateUrl($indexurl, $lastseenlistparams));
+				}
+				return new RedirectResponse($this->generateUrl($indexurl));
 			}
 		}
-		return array('form' => $form->createView());
+		return array(
+			'adminlistconfig' => $adminlistconfig,
+			'form' => $form->createView()
+		);
 	}
 
 	/**
@@ -95,12 +107,12 @@ abstract class AdminListController extends Controller {
 	 * @Template("KunstmaanAdminListBundle:Default:edit.html.twig")
 	 * @return array
 	 */
-	public function editAction($entity_id) {
-
+	public function editAction($entity_id)
+	{
 		$em = $this->getDoctrine()->getEntityManager();
-
 		$request = $this->getRequest();
-		$helper = $em->getRepository($this->getAdminListConfiguration()->getRepositoryName())->findOneById($entity_id);
+		$adminlistconfig = $this->getAdminListConfiguration();
+		$helper = $em->getRepository($adminlistconfig->getRepositoryName())->findOneById($entity_id);
 		if ($helper == NULL) {
 			throw new NotFoundHttpException("Entity not found.");
 		}
@@ -111,11 +123,18 @@ abstract class AdminListController extends Controller {
 			if ($form->isValid()) {
 				$em->persist($helper);
 				$em->flush();
-				return new RedirectResponse($this->generateUrl($this->getAdminListConfiguration()->getIndexUrlFor()));
+				
+				$lastseenlistparams = $request->getSession()->get('listparams_'.$adminlistconfig->getName());
+				$indexurl = $adminlistconfig->getIndexUrlFor();
+				if (!is_null($lastseenlistparams)) {
+					return new RedirectResponse($this->generateUrl($indexurl, $lastseenlistparams));
+				}
+				return new RedirectResponse($this->generateUrl($indexurl));
 			}
 		}
 		return array(
 			'form' => $form->createView(),
+			'adminlistconfig' => $adminlistconfig,
 			'entity' => $helper
 		);
 	}
@@ -127,11 +146,12 @@ abstract class AdminListController extends Controller {
 	 * @param integer $entity_id
 	 * @return \Symfony\Component\HttpFoundation\RedirectResponse|multitype:unknown \Symfony\Component\Form\FormView
 	 */
-	public function deleteAction($entity_id) {
+	public function deleteAction($entity_id)
+	{
 		$em = $this->getDoctrine()->getEntityManager();
-
 		$request = $this->getRequest();
-		$helper = $em->getRepository($this->getAdminListConfiguration()->getRepositoryName())->findOneById($entity_id);
+		$adminlistconfig = $this->getAdminListConfiguration();
+		$helper = $em->getRepository($adminlistconfig->getRepositoryName())->findOneById($entity_id);
 		if ($helper == NULL) {
 			throw new NotFoundHttpException("Entity not found.");
 		}
@@ -142,7 +162,12 @@ abstract class AdminListController extends Controller {
 			if ($form->isValid()) {
 				$em->remove($helper);
 				$em->flush();
-				return new RedirectResponse($this->generateUrl($this->getAdminListConfiguration()->getIndexUrlFor()));
+				$lastseenlistparams = $request->getSession()->get('listparams_'.$adminlistconfig->getName());
+				$indexurl = $adminlistconfig->getIndexUrlFor();
+				if (!is_null($lastseenlistparams)) {
+					return new RedirectResponse($this->generateUrl($indexurl, $lastseenlistparams));
+				}
+				return new RedirectResponse($this->generateUrl($indexurl));
 			}
 		}
 		return array(

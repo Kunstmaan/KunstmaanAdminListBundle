@@ -88,7 +88,7 @@ abstract class AbstractAdminListConfigurator
     }
 
     public function getCustomActions() {
-    	return $this->customActions;
+        return $this->customActions;
     }
 
     public function hasListActions()
@@ -111,17 +111,17 @@ abstract class AbstractAdminListConfigurator
             if (method_exists($item, $methodName)) {
                 $result = $item->$methodName();
             } else {
-            	$methodName = "is" . $columnName;
-            	if(method_exists($item, $methodName)) {
-            		$result = $item->$methodName();
-            	} else {
-            		$methodName = "has" . $columnName;
-            		if(method_exists($item, $methodName)) {
-            			$result = $item->$methodName();
-            		} else {
-            			return sprintf("undefined function [get/is/has]%s()", $columnName);
-            		}
-            	}
+                $methodName = "is" . $columnName;
+                if(method_exists($item, $methodName)) {
+                    $result = $item->$methodName();
+                } else {
+                    $methodName = "has" . $columnName;
+                    if(method_exists($item, $methodName)) {
+                        $result = $item->$methodName();
+                    } else {
+                        return sprintf("undefined function [get/is/has]%s()", $columnName);
+                    }
+                }
             }
         }
         return $result;
@@ -154,5 +154,11 @@ abstract class AbstractAdminListConfigurator
     public function addListAction(ListActionInterface $listAction)
     {
         $this->listActions[] = $listAction;
+    }
+
+    // override if multiple lists of the same entity are used.
+    public function getName()
+    {
+        return strtolower(urlencode($this->getRepositoryName()));
     }
 }

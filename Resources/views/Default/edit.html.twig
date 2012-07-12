@@ -5,10 +5,14 @@
     <form action="{{ path(app.request.attributes.get('_route'), my_router_params()) }}" method="post" {{ form_enctype(form) }}>
         <fieldset>
         	{{ form_widget(form) }}
-
             <div class="actions">
                 <input class="btn primary type" type="submit" value="{{ 'save' | trans }}">
-                <input onclick="window.location = '{{ path('KunstmaanAdminBundle_settings_roles') }}'" type="reset" class="btn" value="{{ 'form.cancel' | trans }}" />
+			    {% set listparams = app.session.get('listparams_' ~ adminlistconfig.name) %}
+			    {% if listparams is defined and listparams %}
+					<input onclick="window.location = '{{ path(adminlistconfig.getIndexUrlFor(), listparams) }}'" type="reset" class="btn" value="{{ 'form.cancel' | trans }}" />
+			    {% else %}
+					<input onclick="window.location = '{{ path(adminlistconfig.getIndexUrlFor()) }}'" type="reset" class="btn" value="{{ 'form.cancel' | trans }}" />
+			    {% endif %}
             </div>
         </fieldset>
     </form>
