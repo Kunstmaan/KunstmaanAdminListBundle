@@ -2,7 +2,7 @@
     <form action="{{ path(basepath, extraparams) }}">
         <div id="filtermap">
             <div class="filterline" id="addline" {% if filter.currentfilters|length >0 %} style="display:none" {% endif %}>
-                <select class="filterselect" id="addfilter" onchange="createFilter(this, true)">
+                <select class="filterselect" id="addfilter" onchange="createFilter(this, true, {startDate: '{{ datePicker_startDate }}'})">
                     <option>{{ "form.addfilter"|trans }}</option>
                     {% for columnname, value in filter.filterdefinitions %}
                     	{% if value['filtername'] is defined %}
@@ -16,7 +16,7 @@
             </div>
             {% for columnname, value in filter.currentfilters %}
             <div class="filterline">
-                <select class="filterdummy filterselect" name="filter_columnname[]" onchange="updateOptions(this)">
+                <select class="filterdummy filterselect" name="filter_columnname[]" onchange="updateOptions(this, {startDate: '{{ datePicker_startDate }}'})">
                     {% for defcolumnname, defvalue in filter.filterdefinitions %}
                     	{% if defvalue['filtername'] is defined %}
                     		{% set filtername = defvalue['filtername'] %}
@@ -31,7 +31,7 @@
                                 {% set namesuffix %}_{{value.uniqueid}}{%endset%}
                                 {% include value.type.template with {'filtertype': value.type, 'data': value.data, 'nameprefix':'filter_', 'namesuffix': namesuffix} %}
                             </span>
-                <a href="#" class="removefilterbutton" onclick="return removeFilter(this, false)"><img src="{{ asset('bundles/kunstmaanadmin/img/general/delete.png') }}" alt="delete" /></a> <a href="#" onclick="return createFilter(this, false)"><img src="{{ asset('bundles/kunstmaanadmin/img/general/add.png') }}" alt="add"/></a>
+                <a href="#" class="removefilterbutton" onclick="return removeFilter(this, false)"><img src="{{ asset('bundles/kunstmaanadmin/img/general/delete.png') }}" alt="delete" /></a> <a href="#" onclick="return createFilter(this, false, {startDate: '{{ datePicker_startDate }}'})"><img src="{{ asset('bundles/kunstmaanadmin/img/general/add.png') }}" alt="add"/></a>
             </div>
             {% endfor %}
         </div>
@@ -44,7 +44,7 @@
 
 
         <div id="filterdummyline" style="display:none">
-            <select class="filterdummy filterselect" name="columnname[]" onchange="updateOptions(this)">
+            <select class="filterdummy filterselect" name="columnname[]" onchange="updateOptions(this, {startDate: '{{ datePicker_startDate }}'})">
                 {% for columnname, value in filter.filterdefinitions %}
                 {% if value['filtername'] is defined %}
                     		{% set filtername = value['filtername'] %}
@@ -58,7 +58,7 @@
                     <span class="filteroptions">
 
                     </span>
-            <a href="#" class="removefilterbutton" onclick="return removeFilter(this, false)"><img src="{{ asset('bundles/kunstmaanadmin/img/general/delete.png') }}"/></a> <a href="#" onclick="return createFilter(this, false)"><img src="{{ asset('bundles/kunstmaanadmin/img/general/add.png') }}"/></a>
+            <a href="#" class="removefilterbutton" onclick="return removeFilter(this, false)"><img src="{{ asset('bundles/kunstmaanadmin/img/general/delete.png') }}"/></a> <a href="#" onclick="return createFilter(this, false, {startDate: '{{ datePicker_startDate }}'})"><img src="{{ asset('bundles/kunstmaanadmin/img/general/add.png') }}"/></a>
         </div>
 
         {% for columnname, value in filter.filterdefinitions %}
@@ -69,15 +69,17 @@
 
     </form>
     <script>
-        function resetFilters(){
+        function resetFilters() {
             //jQuery(".removefilterbutton").click();
             //jQuery("#addline").show();
             jQuery(".filterline").remove();
             jQuery("#filterapplybutton").click();
+            
             return false;
         }
-        function removeFilter(element){
-            if(jQuery("#filtermap").find(".filterline").length==2){
+        
+        function removeFilter(element) {
+            if (jQuery("#filtermap").find(".filterline").length==2) {
                 jQuery(element).parent(".filterline").remove();
                 jQuery("#addline").show();
             } else {
@@ -85,11 +87,13 @@
                     jQuery(this).remove();
                 });
             }
+            
             return false;
         }
-        function createFilter(element, andhide){
+        
+        function createFilter(element, andhide, options) {
             var line = jQuery(element).parent(".filterline");
-            if(andhide == true){
+            if (andhide == true) {
                 line.hide();
             }
             var uniqueid = calculateUniqueFilterId();
@@ -97,17 +101,8 @@
             line.after(newitem);
             newitem.find(".uniquefilterid").val(uniqueid);
             newitem.find(".filterdummy").val(line.find(".filterselect").val());
-            updateOptions(newitem.find(".filterdummy"));
-            newitem.find("input, select").each(function(){
-                jQuery(this).attr("name", "filter_" + jQuery(this).attr("name"));
-            });
-            newitem.find(".filteroptions").find("input:not(.uniquefilterid), select").each(function(){
-                jQuery(this).attr("name", jQuery(this).attr("name") + "_" + uniqueid);
-				if(jQuery(this).hasClass("datepick")){
-					jQuery(this).datePicker();
-				}
-            });
-            if(andhide == true){
+            updateOptions(newitem.find(".filterdummy"), options);
+            if (andhide == true) {
                 newitem.show();
                 line.find("select").val("");
             } else {
@@ -118,22 +113,36 @@
             return false;
         }
 
-        function calculateUniqueFilterId(){
+        function calculateUniqueFilterId() {
             var result = 1;
-            jQuery("input.uniquefilterid").each(function(){
+            jQuery("input.uniquefilterid").each(function() {
                 var value = parseInt( jQuery(this).val() );
-                if(result <= value){
+                if (result <= value) {
                     result = value+1;
                 }
             });
+            
             return result;
         }
 
-        function updateOptions(element){
+        function updateOptions(element, options) {
             var val = jQuery(element).val();
             val = val.replace('.',  '_');
+            var uniqueid = jQuery(element).parent(".filterline").find(".uniquefilterid").val();
             jQuery(element).parent(".filterline").find(".filteroptions").html(jQuery('#filterdummyoptions_'+ val).html());
-           	jQuery(element).parent(".filterline").find(".datepick").datePicker();
+           	jQuery(element).parent(".filterline").find("input, select").each(function() {
+               	var fieldName = jQuery(this).attr("name");
+               	if (fieldName.substr(0, 7) != "filter_") {
+               	    jQuery(this).attr("name", "filter_" + jQuery(this).attr("name"));
+                }
+            });
+           	jQuery(element).parent(".filterline").find(".filteroptions").find("input:not(.uniquefilterid), select").each(function() {
+                jQuery(this).attr("name", jQuery(this).attr("name") + "_" + uniqueid);
+        				if (jQuery(this).hasClass("datepick")) {
+                    jQuery(this).datePicker(options);
+        				}
+            });
+            
         }
     </script>
     <div style="clear:both"></div>
