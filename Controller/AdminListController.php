@@ -2,12 +2,14 @@
 
 namespace Kunstmaan\AdminListBundle\Controller;
 
+use Kunstmaan\AdminListBundle\AdminList\AbstractAdminListConfigurator;
+
 use Symfony\Component\HttpFoundation\Response;
 use Kunstmaan\AdminListBundle\AdminList\AdminList;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Kunstmaan\AdminListBundle\AdminList\AbstractAdminListConfigurator;
+
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
@@ -141,26 +143,18 @@ abstract class AdminListController extends Controller
      */
     protected function doDeleteAction(AbstractAdminListConfigurator $configurator, $entityid)
     {
-        $em = $this->getDoctrine()->getEntityManager();
+        $em = $this->getDoctrine()->getManager();
 
         $request = $this->getRequest();
         $helper = $em->getRepository($configurator->getRepositoryName())->findOneById($entityid);
         if ($helper == null) {
             throw new NotFoundHttpException("Entity not found.");
         }
-        $form = $this->createFormBuilder($helper)->add('id', "hidden")->getForm();
-
+        $indexUrl = $configurator->getIndexUrlFor();
         if ('POST' == $request->getMethod()) {
-            $form->bind($request);
-            if ($form->isValid()) {
-                $em->remove($helper);
-                $em->flush();
-                $indexUrl = $configurator->getIndexUrlFor();
-
-                return new RedirectResponse($this->generateUrl($indexUrl['path'], isset($indexUrl['params']) ? $indexUrl['params'] : array()));
-            }
+            $em->remove($helper);
+            $em->flush();
         }
-
-        return new Response($this->renderView($configurator->getDeleteTemplate(), array('form' => $form->createView(), 'entity' => $helper, 'adminlistconfigurator' => $configurator)));
+        return new RedirectResponse($this->generateUrl($indexUrl['path'], isset($indexUrl['params']) ? $indexUrl['params'] : array()));
     }
 }
