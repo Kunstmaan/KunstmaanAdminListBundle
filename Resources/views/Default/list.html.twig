@@ -1,5 +1,9 @@
 {% extends 'KunstmaanAdminBundle:Default:layout.html.twig' %}
 
+{% block page_header_addition %}
+    <small>{{ "This list contains all the pages, chronologically ordered by updated date." | trans }}</small>
+{% endblock %}
+
 {% block extracss %}
     {{ parent() }}
     {% stylesheets '@KunstmaanAdminListBundle/Resources/public/css/*'
