@@ -26,16 +26,19 @@ class DateFilterType
     function adaptQueryBuilder($querybuilder, &$expressions, $data, $uniqueid)
     {
         if (isset($data['value']) && isset($data['comparator'])) {
-            $date = \DateTime::createFromFormat('d/m/Y', $data['value'])->format('Y-m-d');
-            switch ($data['comparator']) {
-            case "before":
-                $expressions[] = $querybuilder->expr()->lte($this->alias . '.' . $this->columnname, ":var_" . $uniqueid);
-                $querybuilder->setParameter('var_' . $uniqueid, $date);
-                break;
-            case "after":
-                $expressions[] = $querybuilder->expr()->gt($this->alias . '.' . $this->columnname, ":var_" . $uniqueid);
-                $querybuilder->setParameter('var_' . $uniqueid, $date);
-                break;
+            $dateObj = \DateTime::createFromFormat('d/m/Y', $data['value']);
+            if ($dateObj) {
+                $date = $dateObj->format('Y-m-d');
+                switch ($data['comparator']) {
+                case "before":
+                    $expressions[] = $querybuilder->expr()->lte($this->alias . '.' . $this->columnname, ":var_" . $uniqueid);
+                    $querybuilder->setParameter('var_' . $uniqueid, $date);
+                    break;
+                case "after":
+                    $expressions[] = $querybuilder->expr()->gt($this->alias . '.' . $this->columnname, ":var_" . $uniqueid);
+                    $querybuilder->setParameter('var_' . $uniqueid, $date);
+                    break;
+                }
             }
         }
     }

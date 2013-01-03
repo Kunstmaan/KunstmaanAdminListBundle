@@ -50,14 +50,16 @@ class AdminList
     public function bindRequest($request)
     {
         $this->page = $request->query->get("page");
-        if (is_null($this->page)) {
+        if (empty($this->page)) {
             $this->page = 1;
         }
-        if (!is_null($request->query->get("orderBy"))) {
-            $this->orderBy = $request->query->get("orderBy");
+        $orderBy = $request->query->get("orderBy");
+        if (!empty($orderBy)) {
+            $this->orderBy = $orderBy;
         }
-        if (!is_null($request->query->get("orderDirection"))) {
-            $this->orderDirection = $request->query->get("orderDirection");
+        $orderDirection = $request->query->get("orderDirection");
+        if (!empty($orderDirection)) {
+            $this->orderDirection = $orderDirection;
         }
         $this->adminlistfilter->bindRequest($request);
     }
