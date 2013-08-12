@@ -18,11 +18,11 @@
         "white-october/pagerfanta-bundle": "dev-master",
         "pagerfanta/pagerfanta": "dev-master",
         "sensio/framework-extra-bundle": "2.3.*",
-        "kunstmaan/admin-bundle": "self.version",
-        "kunstmaan/utilities-bundle": "self.version"
+        "kunstmaan/admin-bundle": "2.3.*",
+        "kunstmaan/utilities-bundle": "2.3.*"
 
     },
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
     "autoload": {
         "psr-0": { "Kunstmaan\\AdminListBundle": "" }
     },
