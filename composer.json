@@ -22,6 +22,10 @@
         "kunstmaan/utilities-bundle": "2.2.*"
 
     },
+    "require-dev": {
+        "doctrine/doctrine-fixtures-bundle": "2.1.*@dev",
+        "friendsofsymfony/user-bundle": "2.0.*@dev"
+    },
     "autoload": {
         "psr-0": { "Kunstmaan\\AdminListBundle": "" }
     },
