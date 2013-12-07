@@ -23,7 +23,7 @@
     },
     "require-dev": {
         "doctrine/data-fixtures": "1.0.*@dev",
-        "doctrine/doctrine-fixtures-bundle": "2.1.*@dev",
+        "doctrine/doctrine-fixtures-bundle": ">=2.1, <2.3",
         "friendsofsymfony/user-bundle": "dev-master"
     },
     "minimum-stability": "stable",
