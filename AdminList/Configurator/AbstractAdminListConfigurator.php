@@ -159,11 +159,16 @@ abstract class AbstractAdminListConfigurator implements AdminListConfiguratorInt
     /**
      * Get the url to export the listed items
      *
-     * @return string
+     * @return array
      */
     public function getExportUrl()
     {
-        return '';
+        $params = $this->getExtraParameters();
+
+        return array(
+            'path' => $this->getPathByConvention($this::SUFFIX_EXPORT),
+            'params' => array_merge(array('_format' => 'csv'), $params)
+        );
     }
 
     /**
@@ -655,10 +660,10 @@ abstract class AbstractAdminListConfigurator implements AdminListConfiguratorInt
         $entityName = strtolower($this->getEntityName());
         $entityName = str_replace('\\', '_', $entityName);
         if (empty($suffix)) {
-            return sprintf('%s_admin_%s', $this->getBundleName(), $entityName);
+            return sprintf('%s_admin_%s', strtolower($this->getBundleName()), $entityName);
         }
 
-        return sprintf('%s_admin_%s_%s', $this->getBundleName(), $entityName, $suffix);
+        return sprintf('%s_admin_%s_%s', strtolower($this->getBundleName()), $entityName, $suffix);
     }
 
     /**
