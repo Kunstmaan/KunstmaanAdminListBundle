@@ -8,9 +8,9 @@ use Kunstmaan\AdminListBundle\AdminList\AdminList;
 use Kunstmaan\AdminListBundle\AdminList\Configurator\AbstractAdminListConfigurator;
 
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
@@ -38,7 +38,16 @@ abstract class AdminListController extends Controller
         $adminlist = $this->get("kunstmaan_adminlist.factory")->createList($configurator, $em);
         $adminlist->bindRequest($request);
 
-        return new Response($this->renderView($configurator->getListTemplate(), array('adminlist' => $adminlist, 'adminlistconfigurator' => $configurator, 'addparams' => array())));
+        return new Response(
+            $this->renderView(
+                $configurator->getListTemplate(),
+                array(
+                    'adminlist' => $adminlist,
+                    'adminlistconfigurator' => $configurator,
+                    'addparams' => array()
+                )
+            )
+        );
     }
 
     /**
@@ -47,12 +56,13 @@ abstract class AdminListController extends Controller
      * @param AbstractAdminListConfigurator $configurator The adminlist configurator
      * @param string                        $_format      The format to export to
      *
+     * @throws AccessDeniedException
      * @return array
      */
     protected function doExportAction(AbstractAdminListConfigurator $configurator, $_format)
     {
         if (!$configurator->canExport()) {
-            throw new AccessDeniedHttpException('You do not have sufficient rights to access this page.');
+            throw new AccessDeniedException('You do not have sufficient rights to access this page.');
         }
         $em = $this->getDoctrine()->getManager();
         $request = $this->getRequest();
@@ -66,11 +76,16 @@ abstract class AdminListController extends Controller
         $template = sprintf("KunstmaanAdminListBundle:Default:export.%s.twig", $_format);
         $response->headers->set('Content-Type', sprintf('text/%s', $_format));
         $response->headers->set('Content-Disposition', sprintf('attachment; filename=%s', $filename));
-        $response->setContent($this->renderView($template, array(
-            "iterator" => $allIterator,
-            "adminlist" => $adminlist,
-            "queryparams" => array()
-        )));
+        $response->setContent(
+            $this->renderView(
+                $template,
+                array(
+                    "iterator" => $allIterator,
+                    "adminlist" => $adminlist,
+                    "queryparams" => array()
+                )
+            )
+        );
 
         return $response;
     }
@@ -81,12 +96,13 @@ abstract class AdminListController extends Controller
      * @param AbstractAdminListConfigurator $configurator The adminlist configurator
      * @param string                        $type         The type to add
      *
+     * @throws AccessDeniedException
      * @return array
      */
     protected function doAddAction(AbstractAdminListConfigurator $configurator, $type = null)
     {
         if (!$configurator->canAdd()) {
-            throw new AccessDeniedHttpException('You do not have sufficient rights to access this page.');
+            throw new AccessDeniedException('You do not have sufficient rights to access this page.');
         }
 
         /* @var EntityManager $em */
@@ -113,11 +129,21 @@ abstract class AdminListController extends Controller
                 $em->flush();
                 $indexUrl = $configurator->getIndexUrl();
 
-                return new RedirectResponse($this->generateUrl($indexUrl['path'], isset($indexUrl['params']) ? $indexUrl['params'] : array()));
+                return new RedirectResponse(
+                    $this->generateUrl($indexUrl['path'], isset($indexUrl['params']) ? $indexUrl['params'] : array())
+                );
             }
         }
 
-        return new Response($this->renderView($configurator->getAddTemplate(), array('form' => $form->createView(), 'adminlistconfigurator' => $configurator)));
+        return new Response(
+            $this->renderView(
+                $configurator->getAddTemplate(),
+                array(
+                    'form' => $form->createView(),
+                    'adminlistconfigurator' => $configurator
+                )
+            )
+        );
     }
 
     /**
@@ -127,6 +153,7 @@ abstract class AdminListController extends Controller
      * @param string                        $entityId     The id of the entity that will be edited
      *
      * @throws NotFoundHttpException
+     * @throws AccessDeniedException
      * @return Response
      */
     protected function doEditAction(AbstractAdminListConfigurator $configurator, $entityId)
@@ -141,7 +168,7 @@ abstract class AdminListController extends Controller
         }
 
         if (!$configurator->canEdit($helper)) {
-            throw new AccessDeniedHttpException('You do not have sufficient rights to access this page.');
+            throw new AccessDeniedException('You do not have sufficient rights to access this page.');
         }
 
         $form = $this->createForm($configurator->getAdminType($helper), $helper);
@@ -153,13 +180,24 @@ abstract class AdminListController extends Controller
                 $em->flush();
                 $indexUrl = $configurator->getIndexUrl();
 
-                return new RedirectResponse($this->generateUrl($indexUrl['path'], isset($indexUrl['params']) ? $indexUrl['params'] : array()));
+                return new RedirectResponse(
+                    $this->generateUrl($indexUrl['path'], isset($indexUrl['params']) ? $indexUrl['params'] : array())
+                );
             }
         }
 
         $configurator->buildItemActions();
 
-        return new Response($this->renderView($configurator->getEditTemplate(), array('form' => $form->createView(), 'entity' => $helper, 'adminlistconfigurator' => $configurator)));
+        return new Response(
+            $this->renderView(
+                $configurator->getEditTemplate(),
+                array(
+                    'form' => $form->createView(),
+                    'entity' => $helper,
+                    'adminlistconfigurator' => $configurator
+                )
+            )
+        );
     }
 
     /**
@@ -169,6 +207,7 @@ abstract class AdminListController extends Controller
      * @param integer                       $entityId     The id to delete
      *
      * @throws NotFoundHttpException
+     * @throws AccessDeniedException
      * @return Response
      */
     protected function doDeleteAction(AbstractAdminListConfigurator $configurator, $entityId)
@@ -182,7 +221,7 @@ abstract class AdminListController extends Controller
             throw new NotFoundHttpException("Entity not found.");
         }
         if (!$configurator->canDelete($helper)) {
-            throw new AccessDeniedHttpException('You do not have sufficient rights to access this page.');
+            throw new AccessDeniedException('You do not have sufficient rights to access this page.');
         }
 
         $indexUrl = $configurator->getIndexUrl();
@@ -191,6 +230,8 @@ abstract class AdminListController extends Controller
             $em->flush();
         }
 
-        return new RedirectResponse($this->generateUrl($indexUrl['path'], isset($indexUrl['params']) ? $indexUrl['params'] : array()));
+        return new RedirectResponse(
+            $this->generateUrl($indexUrl['path'], isset($indexUrl['params']) ? $indexUrl['params'] : array())
+        );
     }
 }
