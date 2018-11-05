@@ -1,5 +1,5 @@
 <?php
-namespace Kunstmaan\AdminListBundle\Tests\AdminList;
+namespace Kunstmaan\AdminListBundle\Tests\unit\Model;
 
 use ArrayIterator;
 use Kunstmaan\AdminListBundle\AdminList\Configurator\AbstractAdminListConfigurator;

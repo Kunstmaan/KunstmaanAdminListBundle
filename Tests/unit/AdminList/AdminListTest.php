@@ -9,6 +9,7 @@ use Doctrine\ORM\Mapping\ClassMetadata;
 use Doctrine\ORM\PersistentCollection;
 use Kunstmaan\AdminListBundle\AdminList\AdminList;
 use Kunstmaan\AdminListBundle\AdminList\FilterBuilder;
+use Kunstmaan\AdminListBundle\Tests\unit\Model\ConcreteConfigurator;
 use Kunstmaan\MenuBundle\Entity\MenuItem;
 use PHPUnit_Framework_TestCase;
 use stdClass;

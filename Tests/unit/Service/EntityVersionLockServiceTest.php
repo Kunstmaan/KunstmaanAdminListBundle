@@ -6,14 +6,14 @@ use Kunstmaan\AdminBundle\Entity\User;
 use Kunstmaan\AdminListBundle\Entity\EntityVersionLock;
 use Kunstmaan\AdminListBundle\Entity\LockableEntity;
 use Kunstmaan\AdminListBundle\Service\EntityVersionLockService;
-use Kunstmaan\AdminListBundle\Tests\Model\TestLockableEntityInterfaceImplementation;
+use Kunstmaan\AdminListBundle\Tests\unit\Model\TestLockableEntityInterfaceImplementation;
 
 /**
  * class EntityVersionLockServiceTest
  */
 class EntityVersionLockServiceTest extends \PHPUnit_Framework_TestCase
 {
-    protected static $TEST_CLASS = "Kunstmaan\\AdminListBundle\\Tests\\Model\\TestLockableEntityInterfaceImplementation";
+    protected static $TEST_CLASS = "Kunstmaan\\AdminListBundle\\Tests\\unit\\Model\\TestLockableEntityInterfaceImplementation";
     protected static $TEST_NEW_ENTITY_ID = "1";
     protected static $TEST_ID = "5";
     protected static $TEST_ENTITY_ID = "5";

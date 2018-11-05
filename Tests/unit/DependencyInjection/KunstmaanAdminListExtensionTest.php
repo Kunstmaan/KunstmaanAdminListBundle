@@ -4,7 +4,7 @@ namespace Kunstmaan\AdminListBundle\Tests\DependencyInjection;
 
 use Kunstmaan\AdminListBundle\DependencyInjection\KunstmaanAdminListExtension;
 use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
-use Kunstmaan\AdminBundle\Tests\AbstractPrependableExtensionTestCase;
+use Kunstmaan\AdminBundle\Tests\unit\AbstractPrependableExtensionTestCase;
 
 /**
  * Class KunstmaanAdminExtensionTest

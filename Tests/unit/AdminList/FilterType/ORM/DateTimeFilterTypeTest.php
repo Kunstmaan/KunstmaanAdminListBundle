@@ -2,13 +2,19 @@
 
 namespace Kunstmaan\AdminListBundle\Tests\AdminList\FilterType\ORM;
 
+use Codeception\Test\Unit;
 use Doctrine\ORM\QueryBuilder;
 use Kunstmaan\AdminListBundle\AdminList\FilterType\ORM\DateTimeFilterType;
 use ReflectionClass;
 use Symfony\Component\HttpFoundation\Request;
 
-class DateTimeFilterTypeTest extends ORMFilterTypeTestCase
+class DateTimeFilterTypeTest extends Unit
 {
+    /**
+     * @var \UnitTester
+     */
+    protected $tester;
+
     /**
      * @var DateTimeFilterType
      */
@@ -52,7 +58,7 @@ class DateTimeFilterTypeTest extends ORMFilterTypeTestCase
      */
     public function testApply($comparator, $whereClause, $value, $testValue)
     {
-        $qb = $this->getQueryBuilder();
+        $qb = $this->tester->getORMQueryBuilder();
         $qb->select('b')
             ->from('Entity', 'b');
         $this->object->setQueryBuilder($qb);
@@ -74,7 +80,7 @@ class DateTimeFilterTypeTest extends ORMFilterTypeTestCase
      * Sets up the fixture, for example, opens a network connection.
      * This method is called before a test is executed.
      */
-    protected function setUp()
+    protected function _before()
     {
         $this->object = new DateTimeFilterType('datetime', 'b');
     }
